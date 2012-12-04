@@ -78,6 +78,11 @@ public:
      */
     QByteArray operator()(QString url);
     /**
+     * @brief isSucceed -- check last connection for success/error state
+     * @return true, if last connection was OK and returned data. False otherwise
+     */
+    bool isSucceed();
+    /**
      * @brief error -- Human-readable error description
      */
     QString error();

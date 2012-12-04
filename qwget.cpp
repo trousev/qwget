@@ -86,3 +86,8 @@ QByteArray QWget::get(QUrl url)
     QWget wget;
     return wget.exec(url);
 }
+
+bool QWget::isSucceed()
+{
+    return ans != QByteArray();
+}
