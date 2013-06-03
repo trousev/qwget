@@ -5,5 +5,6 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     QWget w;
-    return a.exec();
+    qDebug() << w.exec("http://regservice1.contourcomponents.com:80/");
+    //return a.exec();
 }

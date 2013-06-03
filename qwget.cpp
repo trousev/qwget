@@ -22,7 +22,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
+#include <QDebug>
 #include "qwget.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -32,6 +32,7 @@
 #else
     #include <unistd.h>
 #endif
+#include <QTcpSocket>
 QWget::QWget(QObject *parent) :
     QObject(parent)
 {
@@ -45,6 +46,7 @@ QByteArray QWget::operator ()(QString url)
 
 QByteArray QWget::exec(QUrl url)
 {
+    /*qDebug() << url.toString();
     manager = new QNetworkAccessManager(this);
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
     QNetworkRequest * nr = new QNetworkRequest(url);
@@ -63,7 +65,34 @@ QByteArray QWget::exec(QUrl url)
     delete manager;
     QCoreApplication::instance()->processEvents();
     return ans;
-    return QByteArray();
+    return QByteArray();*/
+
+    QTcpSocket * socket;
+    QString request = QString(
+            "GET %1/%2\n"
+            "Host: %3\n"
+            "User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru; rv:1.9b5) Gecko/2008050509 Firefox/3.0b5\n"
+            "Accept: text/html\n"
+            "Connection: close\n"
+            "\n"
+                )
+            .arg(QString::fromUtf8(url.encodedPath()))
+            .arg(QString::fromUtf8(url.encodedQuery()))
+            .arg(url.host())
+    ;
+    qDebug() << request;
+    QTcpSocket s;
+    s.open(QTcpSocket::ReadWrite);
+    if(url.port() == -1) url.setPort(80);
+    s.connectToHost(url.host(), url.port());
+    if(!s.waitForConnected(2000)) return QByteArray(s.errorString().toUtf8());
+    s.waitForConnected(2000);
+    s.write(request.toUtf8());
+    if(!s.waitForReadyRead(2000)) return QByteArray("ERRREAD");
+    QByteArray ans = s.readAll();
+    //s.close();
+    if(!s.waitForDisconnected(2000)) return QByteArray("ERRDISC");
+    return ans;
 }
 
 void QWget::onFinished(QNetworkReply * reply)
