@@ -29,27 +29,36 @@
 #include <QCoreApplication>
 #ifdef WIN32
     #include <windows.h>
+    #include <winuser.h>
 #else
     #include <unistd.h>
 #endif
+
+QNetworkAccessManager * _qwget_const_manager = NULL;
+
 QWget::QWget(QObject *parent) :
     QObject(parent)
 {
 
     finished = false;
 }
-QByteArray QWget::operator ()(QString url)
+QByteArray QWget::operator ()(QString url, QByteArray postData)
 {
-    return exec(url);
+    return exec(url,postData);
 }
 
-QByteArray QWget::exec(QUrl url)
+QByteArray QWget::exec(QUrl url, QByteArray postData)
 {
-    manager = new QNetworkAccessManager(this);
+    if(!_qwget_const_manager)
+        _qwget_const_manager = new QNetworkAccessManager;
+    manager = _qwget_const_manager;
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
     QNetworkRequest * nr = new QNetworkRequest(url);
     finished = false;
-    manager->get(*nr);
+    if(postData.isNull())
+        manager->get(*nr);
+    else
+        manager->post(*nr,postData);
     while(!finished)
     {
         QCoreApplication::instance()->processEvents();
@@ -60,7 +69,6 @@ QByteArray QWget::exec(QUrl url)
         #endif
     }
     delete nr;
-    delete manager;
     QCoreApplication::instance()->processEvents();
     return ans;
     return QByteArray();
