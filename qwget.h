@@ -100,10 +100,13 @@ public:
      */
     static QByteArray get(QString url);
 
+    static QNetworkAccessManager * network_manager();
+
+
 signals:
 
 private slots:
-    void onFinished();
+    void onFinished(QNetworkReply *reply);
 };
 
 #endif // WGET_H

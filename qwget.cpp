@@ -37,10 +37,17 @@
 
 QNetworkAccessManager * _qwget_const_manager = NULL;
 
+QNetworkAccessManager * QWget::network_manager()
+{
+    if(!_qwget_const_manager)
+        _qwget_const_manager = new QNetworkAccessManager;
+    return _qwget_const_manager;
+}
+
+
 QWget::QWget(QObject *parent) :
     QObject(parent)
 {
-
     finished = false;
 }
 QByteArray QWget::operator ()(QString url, QByteArray postData)
@@ -50,9 +57,7 @@ QByteArray QWget::operator ()(QString url, QByteArray postData)
 
 QByteArray QWget::exec(QUrl url, QByteArray postData)
 {
-    if(!_qwget_const_manager)
-        _qwget_const_manager = new QNetworkAccessManager;
-    manager = _qwget_const_manager;
+    QNetworkAccessManager * manager = network_manager();
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
     QNetworkRequest * nr = new QNetworkRequest(url);
     //nr->setRawHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64; rv:7.0.1) Gecko/20100101 Firefox/7.0.1");
@@ -79,9 +84,9 @@ QByteArray QWget::exec(QUrl url, QByteArray postData)
     return QByteArray();
 }
 
-void QWget::onFinished()
+void QWget::onFinished(QNetworkReply * reply)
 {
-    QNetworkReply * reply = qobject_cast<QNetworkReply*>(sender());
+    //QNetworkReply * reply = qobject_cast<QNetworkReply*>(sender());
     _error = reply->errorString();
     //qDebug () << "ERR:" << _error;
     ans = reply->readAll();

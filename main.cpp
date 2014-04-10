@@ -5,5 +5,5 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     QWget w;
-    return a.exec();
+    qDebug() << w.get("http://bash.im");
 }
