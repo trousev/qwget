@@ -51,7 +51,6 @@ private:
     QByteArray ans;
     QString _error;
     bool finished;
-    QNetworkAccessManager * manager;
 public:
     /**
      * @brief WGet Constructor.
@@ -103,7 +102,7 @@ public:
 signals:
 
 private slots:
-    void onFinished(QNetworkReply*);
+    void onFinished();
 };
 
 #endif // WGET_H

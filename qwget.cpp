@@ -25,6 +25,7 @@
 
 #include "qwget.h"
 #include <QNetworkAccessManager>
+#include <QNetworkProxy>
 #include <QNetworkReply>
 #include <QCoreApplication>
 #ifdef WIN32
@@ -32,6 +33,18 @@
 #else
     #include <unistd.h>
 #endif
+
+QNetworkAccessManager * __manager = NULL;
+QNetworkAccessManager * manager()
+{
+    if(!__manager)
+    {
+        __manager = new QNetworkAccessManager;
+        __manager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy,"localhost",8118));
+    }
+    return __manager;
+}
+
 QWget::QWget(QObject *parent) :
     QObject(parent)
 {
@@ -45,11 +58,13 @@ QByteArray QWget::operator ()(QString url)
 
 QByteArray QWget::exec(QUrl url)
 {
-    manager = new QNetworkAccessManager(this);
-    connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
+    //connect(manager(),SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
     QNetworkRequest * nr = new QNetworkRequest(url);
+    //nr->setRawHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64; rv:7.0.1) Gecko/20100101 Firefox/7.0.1");
+    nr->setRawHeader("User-Agent","Opera/9.0");
     finished = false;
-    manager->get(*nr);
+    QNetworkReply * reply = manager()->get(*nr);
+    connect(reply, SIGNAL(finished()), this, SLOT(onFinished()));
     while(!finished)
     {
         QCoreApplication::instance()->processEvents();
@@ -59,22 +74,25 @@ QByteArray QWget::exec(QUrl url)
             usleep(50000);
         #endif
     }
-    delete nr;
-    delete manager;
     QCoreApplication::instance()->processEvents();
+    //qDebug() << "Ans: " << ans;
+    // delete nr;
     return ans;
     return QByteArray();
 }
 
-void QWget::onFinished(QNetworkReply * reply)
+void QWget::onFinished()
 {
+    QNetworkReply * reply = qobject_cast<QNetworkReply*>(sender());
     _error = reply->errorString();
+    //qDebug () << "ERR:" << _error;
     ans = reply->readAll();
     finished = true;
 }
 
 QString QWget::error()
 {
+    //qDebug () << "ERR:" << _error;
     return _error;
 }
 QByteArray QWget::get(QString url)
