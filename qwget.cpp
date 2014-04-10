@@ -30,20 +30,12 @@
 #include <QCoreApplication>
 #ifdef WIN32
     #include <windows.h>
+    #include <winuser.h>
 #else
     #include <unistd.h>
 #endif
 
-QNetworkAccessManager * __manager = NULL;
-QNetworkAccessManager * manager()
-{
-    if(!__manager)
-    {
-        __manager = new QNetworkAccessManager;
-        __manager->setProxy(QNetworkProxy(QNetworkProxy::HttpProxy,"localhost",8118));
-    }
-    return __manager;
-}
+QNetworkAccessManager * _qwget_const_manager = NULL;
 
 QWget::QWget(QObject *parent) :
     QObject(parent)
@@ -51,20 +43,25 @@ QWget::QWget(QObject *parent) :
 
     finished = false;
 }
-QByteArray QWget::operator ()(QString url)
+QByteArray QWget::operator ()(QString url, QByteArray postData)
 {
-    return exec(url);
+    return exec(url,postData);
 }
 
-QByteArray QWget::exec(QUrl url)
+QByteArray QWget::exec(QUrl url, QByteArray postData)
 {
-    //connect(manager(),SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
+    if(!_qwget_const_manager)
+        _qwget_const_manager = new QNetworkAccessManager;
+    manager = _qwget_const_manager;
+    connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
     QNetworkRequest * nr = new QNetworkRequest(url);
     //nr->setRawHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64; rv:7.0.1) Gecko/20100101 Firefox/7.0.1");
     nr->setRawHeader("User-Agent","Opera/9.0");
     finished = false;
-    QNetworkReply * reply = manager()->get(*nr);
-    connect(reply, SIGNAL(finished()), this, SLOT(onFinished()));
+    if(postData.isNull())
+        manager->get(*nr);
+    else
+        manager->post(*nr,postData);
     while(!finished)
     {
         QCoreApplication::instance()->processEvents();
@@ -74,6 +71,7 @@ QByteArray QWget::exec(QUrl url)
             usleep(50000);
         #endif
     }
+    delete nr;
     QCoreApplication::instance()->processEvents();
     //qDebug() << "Ans: " << ans;
     // delete nr;

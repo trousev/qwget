@@ -69,13 +69,14 @@ public:
     /**
      * @brief exec -- start downloading url, given in url parameter
      * @param url -- url to download
+     * @param postData -- data, used in POST query. If it's null, GET query is performed.
      * @return ByteArray of downloaded page or QByteArray() at error
      */
-    QByteArray exec(QUrl url);
+    QByteArray exec(QUrl url, QByteArray postData= QByteArray());
     /**
      * @brief operator () -- alias to exec()
      */
-    QByteArray operator()(QString url);
+    QByteArray operator()(QString url, QByteArray postData = QByteArray());
     /**
      * @brief isSucceed -- check last connection for success/error state
      * @return true, if last connection was OK and returned data. False otherwise
