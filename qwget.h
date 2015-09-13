@@ -29,7 +29,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QNetworkAccessManager>
-
+#include <QNetworkProxy>
 class QWget : public QObject
 {
     Q_OBJECT
@@ -101,7 +101,7 @@ public:
     static QByteArray get(QString url);
 
     static QNetworkAccessManager * network_manager();
-
+    static void setProxy(QNetworkProxy proxy);
 
 signals:
 

@@ -28,6 +28,7 @@
 #include <QNetworkProxy>
 #include <QNetworkReply>
 #include <QCoreApplication>
+#include <QDebug>
 #ifdef WIN32
     #include <windows.h>
     #include <winuser.h>
@@ -54,14 +55,21 @@ QByteArray QWget::operator ()(QString url, QByteArray postData)
 {
     return exec(url,postData);
 }
+QNetworkProxy _proxy;
+void QWget::setProxy(QNetworkProxy proxy){
+    _proxy = proxy;
+}
 
 QByteArray QWget::exec(QUrl url, QByteArray postData)
 {
     QNetworkAccessManager * manager = network_manager();
+    manager->setProxy(_proxy);
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
     QNetworkRequest * nr = new QNetworkRequest(url);
     //nr->setRawHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64; rv:7.0.1) Gecko/20100101 Firefox/7.0.1");
     nr->setRawHeader("User-Agent","Opera/9.0");
+    qDebug() << url;
+
     finished = false;
     if(postData.isNull())
         manager->get(*nr);
