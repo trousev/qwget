@@ -32,6 +32,7 @@
 #else
     #include <unistd.h>
 #endif
+#include <QDebug>
 QWget::QWget(QObject *parent) :
     QObject(parent)
 {
@@ -42,12 +43,18 @@ QByteArray QWget::operator ()(QString url)
 {
     return exec(url);
 }
+QNetworkProxy _proxy;
+void QWget::setProxy(QNetworkProxy proxy){
+    _proxy = proxy;
+}
 
 QByteArray QWget::exec(QUrl url)
 {
     manager = new QNetworkAccessManager(this);
+    manager->setProxy(_proxy);
     connect(manager,SIGNAL(finished(QNetworkReply*)),this,SLOT(onFinished(QNetworkReply*)));
     QNetworkRequest * nr = new QNetworkRequest(url);
+    qDebug() << url;
     finished = false;
     manager->get(*nr);
     while(!finished)

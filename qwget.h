@@ -29,7 +29,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QNetworkAccessManager>
-
+#include <QNetworkProxy>
 class QWget : public QObject
 {
     Q_OBJECT
@@ -99,6 +99,8 @@ public:
      * @return ByteArray with downloaded page or QByteArray() at error
      */
     static QByteArray get(QString url);
+
+    static void setProxy(QNetworkProxy proxy);
 
 signals:
 
